@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Emotion Detection</title>
+</head>
+<body>
+
+<h2>Driver Emotion Detection System</h2>
+<p id="status">Waiting for data...</p>
+
+<script>
+function startDetection() {
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        // Request permission on iOS 13+ and some Android devices
+        DeviceMotionEvent.requestPermission()
+            .then(permissionState => {
+                if (permissionState === 'granted') {
+                    window.addEventListener("devicemotion", handleMotion);
+                } else {
+                    document.getElementById("status").innerText = "Permission Denied!";
+                }
+            })
+            .catch(() => {
+                document.getElementById("status").innerText = "Permission Request Failed!";
+            });
+    } else if (window.DeviceMotionEvent) {
+        // For devices not requiring permission
+        window.addEventListener("devicemotion", handleMotion);
+    } else {
+        document.getElementById("status").innerText = "Device Motion not supported";
+    }
+}
+
+function handleMotion(event) {
+    const accelX = event.acceleration.x || 0;
+    const accelY = event.acceleration.y || 0;
+    const accelZ = event.acceleration.z || 0;
+
+    let result = "Normal Driving";
+
+    // Simulate sudden braking in a truck (slower deceleration)
+    if (accelY < -3) {
+        result = "Likely Rash Driving (Sudden Braking)";
+    }
+
+    // Simulate aggressive turning in a truck (higher forces on turns)
+    if (Math.abs(accelX) > 2.5 || Math.abs(accelZ) > 2.5) {
+        result = "Likely Rash Driving (Aggressive Turning)";
+    }
+
+    document.getElementById("status").innerText = result;
+}
+
+// Start detection when the page loads
+window.onload = startDetection;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Routing with Pin Codes and Intermediate Points</title>
+    <style>
+        .container {
+            margin: 20px;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            margin-left: 10px;
+        }
+        iframe {
+            width: 100%;
+            height: 450px;
+            border: 0;
+            margin-top: 20px;
+        }
+        #locationStatus, #geocodeStatus {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Dynamic Routing Based on Pin Codes and Intermediate Points</h1>
+    <input type="number" id="numIntermediates" placeholder="Enter number of intermediate points" />
+    <button onclick="addIntermediateFields()">Add Intermediate Points</button>
+    <div id="intermediateFields"></div>
+    <input type="text" id="destinationPincode" placeholder="Enter Destination Indian Pin Code (e.g., 400004)" />
+    <button onclick="routePinCode()">Route</button>
+    <div id="locationStatus"></div>
+    <div id="geocodeStatus"></div>
+</div>
+<iframe id="googleMap" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+<script>
+    const API_KEY = 'AIzaSyDj3vJGnYx52KENC7svMfzp2O56Uty2fr8';
+    let currentLocation = null;
+    const locationStatus = document.getElementById('locationStatus');
+    const geocodeStatus = document.getElementById('geocodeStatus');
+    const intermediateFields = document.getElementById('intermediateFields');
+
+    // Geolocation Initialization
+    function initializeGeolocation() {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                handleInitialLocation, 
+                handleLocationError,
+                { 
+                    enableHighAccuracy: false, 
+                    timeout: 5000, 
+                    maximumAge: 30000 
+                }
+            );
+        } else {
+            updateLocationStatus('Geolocation is not supported by this browser.');
+        }
+    }
+
+    function handleInitialLocation(position) {
+        currentLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+        };
+        
+        updateLocationStatus('Current location found! Ready to route.');
+        startPreciseLocationTracking();
+    }
+
+    function startPreciseLocationTracking() {
+        navigator.geolocation.watchPosition(
+            (position) => {
+                currentLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                updateLocationStatus('Location updated with high accuracy.');
+            },
+            handleLocationError,
+            { 
+                enableHighAccuracy: true, 
+                timeout: 5000, 
+                maximumAge: 0 
+            }
+        );
+    }
+
+    function handleLocationError(error) {
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                updateLocationStatus('Location access denied. Please enable location permissions.');
+                break;
+            case error.POSITION_UNAVAILABLE:
+                updateLocationStatus('Location information is unavailable.');
+                break;
+            case error.TIMEOUT:
+                updateLocationStatus('Location request timed out.');
+                break;
+            default:
+                updateLocationStatus('An unknown error occurred with geolocation.');
+        }
+    }
+
+    function updateLocationStatus(message) {
+        locationStatus.textContent = message;
+        locationStatus.style.color = message.includes('error') ? 'red' : 'green';
+    }
+
+    function updateGeocodeStatus(message, isError = false) {
+        geocodeStatus.textContent = message;
+        geocodeStatus.style.color = isError ? 'red' : 'green';
+    }
+
+    // Geocoding Function to convert Pincode to Coordinates
+    function geocodePincode(pincode) {
+        return new Promise((resolve, reject) => {
+            const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode},India&key=${API_KEY}`;
+            
+            fetch(geocodingUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'OK' && data.results.length > 0) {
+                        const location = data.results[0].geometry.location;
+                        updateGeocodeStatus(`Geocoded ${pincode} successfully`);
+                        resolve({
+                            lat: location.lat,
+                            lng: location.lng
+});
+                    } else {
+                        updateGeocodeStatus(`Geocoding failed for ${ pincode}`, true);
+                        reject(new Error('Geocoding failed'));
+                    }
+                })
+                .catch(error => {
+                    updateGeocodeStatus(`Geocoding error: ${error.message}`, true);
+                    reject(error);
+                });
+        });
+    }
+
+    // Function to add intermediate input fields
+    function addIntermediateFields() {
+        const numIntermediates = document.getElementById('numIntermediates').value;
+        intermediateFields.innerHTML = ''; // Clear previous fields
+
+        for (let i = 0; i < numIntermediates; i++) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = `Enter Intermediate Pin Code ${i + 1} (e.g., 40000${i + 1})`;
+            input.id = `intermediatePincode${i + 1}`;
+            intermediateFields.appendChild(input);
+        }
+    }
+
+    // Routing Function
+    async function routePinCode() {
+        const destinationPincode = document.getElementById('destinationPincode').value.trim();
+        const intermediatePincodes = [];
+
+        // Collect intermediate pin codes
+        const numIntermediates = intermediateFields.childElementCount;
+        for (let i = 0; i < numIntermediates; i++) {
+            const intermediatePincode = document.getElementById(`intermediatePincode${i + 1}`).value.trim();
+            intermediatePincodes.push(intermediatePincode);
+        }
+
+        // Validate current location
+        if (!currentLocation) {
+            alert('Current location not available. Please wait and try again.');
+            return;
+        }
+
+        try {
+            // Geocode destination and intermediate points
+            const destination = await geocodePincode(destinationPincode);
+            const waypoints = await Promise.all(intermediatePincodes.map(pincode => geocodePincode(pincode)));
+
+            // Create Google Maps directions URL
+            const googleMap = document.getElementById('googleMap');
+            const waypointsString = waypoints.map(point => `${point.lat},${point.lng}`).join('|');
+            const googleMapUrl = `https://www.google.com/maps/embed/v1/directions?key=${API_KEY}&origin=${currentLocation.lat},${currentLocation.lng}&waypoints=${waypointsString}&destination=${destination.lat},${destination.lng}`;
+            
+            googleMap.src = googleMapUrl;
+        } catch (error) {
+            alert('Failed to route. Please check the pin codes and try again.');
+        }
+    }
+
+    // Initialize geolocation on page load
+    initializeGeolocation();
+</script>
+</body>
+</html>

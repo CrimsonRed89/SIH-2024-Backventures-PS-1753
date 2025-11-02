@@ -1,0 +1,238 @@
+@import "../../../src/variables";
+
+.featured {
+    flex: 2;
+    -webkit-box-shadow: $box-shadow-dark;
+    box-shadow: $box-shadow-light;
+    padding: 1%;
+    background-color: $primary-light-bg;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5%;
+
+    .top {
+        height: 5%;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        color: $secondary-dark;
+        font-size: 2vmin;
+
+        .title {
+            font-weight: 500;
+        }
+    }
+
+    .middle {
+        height: 70%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .featuredChart {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 5%;
+
+            .chartDiv {
+                flex: 4;
+                height: 50%;
+                .CircularProgressbar {
+                    height: 100%;
+                }
+            }
+
+            .info {
+                flex: 3;
+                height: 35%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+
+                .title {
+                    font-weight: 500;
+                    font-size: 1.2rem;
+                    color: $primary-light;
+                }
+
+                .amount {
+                    font-size: 1.5rem;
+                    color: $secondary-dark;
+                }
+
+                .desc {
+                    font-weight: 300;
+                    font-size: 0.8rem;
+                    color: $primary-light;
+                    text-align: center;
+                }
+            }
+        }
+    }
+
+    .bottom {
+        height: 25%;
+        min-width: 100%;
+
+        .summary {
+            display: flex;
+            justify-content: center;
+            align-self: center;
+            min-height: 100%;
+
+            .item {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+
+                .itemTitle {
+                    font-size: 1.2em;
+                    text-align: center;
+                    color: $primary-light;
+                }
+
+                .itemResult {
+                    justify-content: center;
+                    display: flex;
+                    font-size: 1em;
+                    margin-left: auto;
+                    margin-right: auto;
+
+                    &.positive {
+                        color: $success-text;
+                    }
+
+                    &.negative {
+                        color: $warning-text;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 1200px) {
+    .featured {
+        height: 25% !important;
+        display: flex !important;
+        flex-direction: row !important;
+        width: 100% !important;
+        gap: 2% !important;
+
+        .top {
+            height: 0;
+            width: 0;
+            visibility: hidden;
+        }
+
+        .middle {
+            height: 100%;
+            max-height: 100%;
+            min-width: 63%;
+            width: 100%;
+            flex: 7;
+
+            .featuredChart {
+                flex-direction: row-reverse;
+
+                .chartDiv {
+                    height: 100%;
+                    flex: 1;
+                }
+
+                .info {
+                    min-height: 100%;
+                    height: 100%;
+                    justify-content: center;
+                    width: 100%;
+                    flex: 2;
+
+                    .title {
+                        font-size: 1.2em;
+                    }
+
+                    .amount {
+                        font-size: 1.5em;
+                    }
+
+                    .desc {
+                        font-size: 0.75em !important;
+                    }
+                }
+            }
+        }
+
+        .bottom {
+            height: 100%;
+            min-width: auto;
+            display: flex;
+            flex: 4;
+            flex-direction: column;
+
+            .summary {
+                height: 100%;
+                width: 100%;
+                flex-direction: column;
+
+                .item {
+                    width: 80%;
+                    justify-content: space-between;
+                    flex-direction: row;
+                    margin-left: 10%;
+
+                    .itemTitle {
+                        font-size: 1em;
+                    }
+
+                    .itemResult {
+                        font-size: 1em;
+                        margin-right: 0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 800px) {
+    .featured {
+        .middle {
+            .featuredChart {
+                .info {
+                    .title {
+                        font-size: 0.65em !important;
+                        color: $primary-light;
+                    }
+
+                    .amount {
+                        font-size: 1.2em;
+                    }
+
+                    .desc {
+                        font-size: 0.4em !important;
+                    }
+                }
+            }
+        }
+
+        .bottom {
+            .summary {
+                .item {
+                    .itemTitle {
+                        font-size: 0.6em !important;
+                    }
+
+                    .itemResult {
+                        font-size: 0.6em !important;
+                    }
+                }
+            }
+        }
+    }
+}

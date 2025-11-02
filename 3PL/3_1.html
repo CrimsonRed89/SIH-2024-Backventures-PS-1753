@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Routing API Simulation</title>
+    <style>
+        .container {
+            margin: 20px;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            margin-left: 10px;
+        }
+        iframe {
+            width: 100%;
+            height: 450px;
+            border: 0;
+            margin-top: 20px;
+        }
+        #status {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        #api-log {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Dynamic Routing API Simulation</h1>
+    <label>Source: <input type="text" id="source" placeholder="Enter Source"></label><br><br>
+    <label>Destination: <input type="text" id="destination" placeholder="Enter Destination"></label><br><br>
+    <label>Initial Container Capacity (tons): <input type="number" id="initialCapacity" placeholder="Enter Capacity" value="1000"></label><br><br>
+    <input type="number" id="numIntermediates" placeholder="Enter number of intermediate points" />
+    <button onclick="addIntermediateFields()">Add Intermediate Points</button>
+    <div id="intermediateFields"></div><br>
+    <button onclick="processRoute()">Process Route</button>
+    <div id="status"></div>
+    <div id="api-log"></div>
+</div>
+<script>
+    const intermediateFields = document.getElementById('intermediateFields');
+    const statusDiv = document.getElementById('status');
+    const apiLog = document.getElementById('api-log');
+
+    function addIntermediateFields() {
+        const numIntermediates = parseInt(document.getElementById('numIntermediates').value, 10);
+        intermediateFields.innerHTML = '';
+
+        for (let i = 0; i < numIntermediates; i++) {
+            const div = document.createElement('div');
+            div.innerHTML = `<label>Intermediate ${i + 1}: 
+                <input type="text" placeholder="Enter Location" id="intermediate${i + 1}"> 
+                Load to Unload (tons): <input type="number" placeholder="Load" id="load${i + 1}" value="100">
+            </label><br>`;
+            intermediateFields.appendChild(div);
+        }
+    }
+
+    async function fetch3PLPartners(destination) {
+        // Mock API Call to simulate fetching 3PL partners
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve([
+                    { name: '3PL Partner A', load: 200, destination },
+                    { name: '3PL Partner B', load: 300, destination }
+                ]);
+            }, 1000);
+        });
+    }
+
+    async function processRoute() {
+        const source = document.getElementById('source').value;
+        const destination = document.getElementById('destination').value;
+        const initialCapacity = parseFloat(document.getElementById('initialCapacity').value);
+
+        if (!source || !destination || isNaN(initialCapacity)) {
+            statusDiv.textContent = 'Please provide source, destination, and initial capacity.';
+            return;
+        }
+
+        const numIntermediates = intermediateFields.childElementCount;
+        let remainingCapacity = initialCapacity;
+        let routeLog = `Processing Route: Source (${source}) to Destination (${destination})<br>`;
+
+        for (let i = 0; i < numIntermediates; i++) {
+            const intermediateLocation = document.getElementById(`intermediate${i + 1}`).value;
+            const load = parseFloat(document.getElementById(`load${i + 1}`).value);
+
+            if (!intermediateLocation || isNaN(load)) {
+                statusDiv.textContent = `Please provide details for Intermediate ${i + 1}.`;
+                return;
+            }
+
+            remainingCapacity -= load;
+            routeLog += `Visited ${intermediateLocation}. Load Unloaded: ${load}. Remaining Capacity: ${remainingCapacity} tons.<br>`;
+        }
+
+        if (remainingCapacity / initialCapacity >= 0.75 && remainingCapacity / initialCapacity <= 0.80) {
+            routeLog += 'Container capacity is within 75%-80%. Fetching 3PL partners...<br>';
+
+            const partners = await fetch3PLPartners(destination);
+            const partner = partners.reduce((closest, current) => {
+                if (remainingCapacity + current.load <= initialCapacity && 
+                    (closest === null || current.load > closest.load)) {
+                    return current;
+                }
+                return closest;
+            }, null);
+
+            if (partner) {
+                routeLog += `Selected 3PL Partner: ${partner.name}. Load: ${partner.load}.<br>`;
+                remainingCapacity += partner.load;
+                routeLog += `Rerouting truck. New Remaining Capacity: ${remainingCapacity} tons.<br>`;
+            } else {
+                routeLog += 'No suitable 3PL partners found.<br>';
+            }
+        } else {
+            routeLog += 'Container capacity is outside 75%-80%. No 3PL fetching needed.<br>';
+        }
+
+        apiLog.innerHTML = routeLog;
+        statusDiv.textContent = 'Route processing completed.';
+    }
+</script>
+</body>
+</html>

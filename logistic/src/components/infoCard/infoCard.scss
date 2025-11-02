@@ -1,0 +1,44 @@
+@import "../../../src/variables";
+
+.cardContainer {
+    height: 100%;
+    padding: 2%;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    -webkit-box-shadow: $box-shadow-dark;
+    box-shadow: $box-shadow-light;
+    display: flex;
+    flex-direction: column;
+    gap: 5%;
+
+    .header {
+        color: $secondary-dark;
+        font-size: 1.6em;
+    }
+
+    .card-body {
+        display: flex;
+        align-items: center;
+        .card-left {
+            flex: 1;
+            .information {
+                padding-left: 4%;
+                color: $secondary-dark;
+                font-size: 1em;
+            }
+        }
+
+        .card-right {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            img {
+                max-height: 10vh;
+                max-width: 100%;
+            }
+        }
+    }
+}

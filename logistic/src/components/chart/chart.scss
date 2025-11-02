@@ -1,0 +1,36 @@
+@import "../../../src/variables";
+
+.chart {
+    flex: 4;
+    -webkit-box-shadow: $box-shadow-dark;
+    box-shadow: $box-shadow-light;
+    padding: 1%;
+    color: $secondary-dark;
+    background-color: $primary-light-bg;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 5%;
+
+    .top {
+        height: 10%;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        color: $secondary-dark;
+        font-size: 2vmin;
+
+        .title {
+            font-weight: 500;
+        }
+
+        .btnText {
+            cursor: pointer;
+        }
+    }
+
+    .bottom {
+        height: 85%;
+    }
+}

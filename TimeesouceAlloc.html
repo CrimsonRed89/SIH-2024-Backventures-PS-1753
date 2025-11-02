@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labor Allocation Algorithm</title>
+    <script>
+        function allocateLabor() {
+            const truckTypes = {
+                "mini": 1,        // Baseline time factor
+                "light": 1.5,     // Light-duty takes 1.5x the effort
+                "medium": 2,      // Medium-duty takes 2x the effort
+                "heavy": 3,       // Heavy-duty takes 3x the effort
+                "semi": 4,        // Semi-trailer takes 4x the effort
+                "ultra-heavy": 5  // Ultra-heavy takes 5x the effort
+            };
+
+            // Input data
+            const numLabors = parseInt(document.getElementById("numLabors").value);
+            const truckData = JSON.parse(document.getElementById("truckData").value); // Truck data input as [{type: "mini", count: 2}, {type: "heavy", count: 1}]
+
+            // Calculate total effort required
+            let totalEffort = 0;
+            truckData.forEach(truck => {
+                totalEffort += truckTypes[truck.type] * truck.count;
+            });
+
+            // Calculate effort per laborer
+            const effortPerLabor = totalEffort / numLabors;
+
+            // Allocate labor to trucks
+            let allocation = [];
+            truckData.forEach(truck => {
+                const truckEffort = truckTypes[truck.type] * truck.count;
+                const laborForTruck = Math.round((truckEffort / totalEffort) * numLabors);
+                allocation.push({ type: truck.type, count: truck.count, labors: laborForTruck });
+            });
+
+            // Display result
+            let result = "<h3>Labor Allocation:</h3><ul>";
+            allocation.forEach(item => {
+                result += `<li>${item.count} ${item.type} truck(s): ${item.labors} laborer(s) allocated</li>`;
+            });
+            result += "</ul>";
+            document.getElementById("output").innerHTML = result;
+        }
+    </script>
+</head>
+<body>
+    <h1>Labor Allocation for Trucks</h1>
+
+    <label for="numLabors">Number of Laborers:</label>
+    <input type="number" id="numLabors" placeholder="Enter number of laborers"><br><br>
+
+    <label for="truckData">Truck Data (JSON format):</label>
+    <textarea id="truckData" placeholder='Example: [{"type": "mini", "count": 2}, {"type": "heavy", "count": 1}]' rows="5" cols="50"></textarea><br><br>
+
+    <button onclick="allocateLabor()">Allocate Labor</button>
+
+    <div id="output"></div>
+</body>
+</html>

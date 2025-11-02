@@ -1,0 +1,29 @@
+@import "../../../src/variables";
+
+.list {
+    display: flex;
+
+    .listContainer {
+        flex: 6;
+        display: flex;
+        flex-direction: column;
+        background-color: $app-bg;
+
+        .container {
+            -webkit-box-shadow: $box-shadow-dark;
+            box-shadow: $box-shadow-light;
+            height: fit-content;
+            width: 90%;
+            margin: auto;
+            padding: 2%;
+            margin-top: 5%;
+            background-color: $primary-light-bg;
+
+            .dataTable {
+                // height: 50vh;
+                padding: 0;
+                margin-bottom: 0 !important;
+            }
+        }
+    }
+}

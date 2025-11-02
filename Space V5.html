@@ -1,0 +1,192 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Optimized Box Packing</title>
+        <style>
+            body { margin: 0; background-color: white; }
+            canvas { display: block; }
+            #controls { position: fixed; top: 10px; left: 10px; background: white; padding: 10px; border: 1px solid #ccc; z-index: 1000; }
+        </style>
+    </head>
+    <body>
+        <div id="controls">
+            <label for="containerWidth">Container Width:</label>
+            <input type="number" id="containerWidth" value="10" /><br />
+            <label for="containerHeight">Container Height:</label>
+            <input type="number" id="containerHeight" value="5" /><br />
+            <label for="containerDepth">Container Depth:</label>
+            <input type="number" id="containerDepth" value="6" /><br />
+            <label for="excelFile">Upload Excel File:</label>
+            <input type="file" id="excelFile" accept=".xlsx, .xls" /><br />
+            <button id="generate">Generate</button>
+        </div>
+
+        <script>
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            let containerWidth = 10;
+            let containerHeight = 5;
+            let containerDepth = 6;
+
+            const containerGroup = new THREE.Group();
+            scene.add(containerGroup);
+
+            function createBox(x, y, z, width, height, depth, color) {
+                const geometry = new THREE.BoxGeometry(width, height, depth);
+                const material = new THREE.MeshBasicMaterial({ color });
+                const box = new THREE.Mesh(geometry, material);
+
+                box.position.set(x, y, z);
+                containerGroup.add(box);
+                const edges = new THREE.EdgesGeometry(geometry);
+                const wireframe = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000 }));
+                box.add(wireframe);
+            }
+
+            function createContainer() {
+                const geometry = new THREE.BoxGeometry(containerWidth, containerHeight, containerDepth);
+                const edges = new THREE.EdgesGeometry(geometry);
+                const wireframe = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xff0000 }));
+
+                wireframe.position.set(0, 0, 0);
+                containerGroup.add(wireframe);
+            }
+
+            function checkFit(positions, x, y, z, box) {
+                for (let i = 0; i < box.height; i++)
+                    for (let j = 0; j < box.depth; j++)
+                        for (let k = 0; k < box.width; k++)
+                            if (positions[y + i][z + j][x + k]) return false;
+                return true;
+            }
+
+            function placeBoxAt(positions, x, y, z, box) {
+                for (let i = 0; i < box.height; i++)
+                    for (let j = 0; j < box.depth; j++)
+                        for (let k = 0; k < box.width; k++)
+                            positions[y + i][z + j][x + k] = true;
+            }
+
+            function placeBoxes(boxes) {
+                containerGroup.clear();
+                createContainer();
+
+    
+                boxes.sort((a, b) => a.stop - b.stop || (b.width * b.height * b.depth) - (a.width * a.height * a.depth));
+
+                let positions = Array.from({ length: containerHeight }, () =>
+                    Array(containerDepth).fill(0).map(() => Array(containerWidth).fill(false))
+                );
+
+                boxes.forEach(box => {
+                    let placed = false;
+
+                    for (let y = 0; y <= containerHeight - box.height && !placed; y++) {
+                        for (let z = 0; z <= containerDepth - box.depth && !placed; z++) {
+                            for (let x = 0; x <= containerWidth - box.width && !placed; x++) {
+                                if (checkFit(positions, x, y, z, box)) {
+                                    placeBoxAt(positions, x, y, z, box);
+                                    createBox(
+                                        x + box.width / 2 - containerWidth / 2, 
+                                        y + box.height / 2 - containerHeight / 2, 
+                                        z + box.depth / 2 - containerDepth / 2, 
+                                        box.width, box.height, box.depth, box.color
+                                    );
+                                    placed = true;
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            document.getElementById('generate').addEventListener('click', () => {
+                containerWidth = parseInt(document.getElementById('containerWidth').value);
+                containerHeight = parseInt(document.getElementById('containerHeight').value);
+                containerDepth = parseInt(document.getElementById('containerDepth').value);
+
+                const file = document.getElementById('excelFile').files[0];
+                if (!file) {
+                    alert('Please upload an Excel file!');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { header: ['Width', 'Height', 'Depth', 'Stop'], range: 1 });
+
+                    const colorMap = {
+                        1: 0xff0000, 
+                        2: 0x00ff00, 
+                        3: 0x0000ff, 
+                    };
+
+                    const boxes = rows.map(row => ({
+                        width: parseFloat(row.Width),
+                        height: parseFloat(row.Height),
+                        depth: parseFloat(row.Depth),
+                        stop: parseInt(row.Stop),
+                        color: colorMap[parseInt(row.Stop)] || 0xffffff
+                    }));
+
+                    placeBoxes(boxes);
+                };
+
+                reader.readAsArrayBuffer(file);
+            });
+
+            camera.position.set(15, 10, 15);
+            camera.lookAt(0, 0, 0);
+
+        
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+
+            renderer.domElement.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                previousMousePosition = {
+                    x: e.clientX,
+                    y: e.clientY
+                };
+            });
+
+            renderer.domElement.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaMove = {
+                        x: e.clientX - previousMousePosition.x,
+                        y: e.clientY - previousMousePosition.y
+                    };
+
+                    containerGroup.rotation.y += deltaMove.x * 0.01; // Horizontal rotation
+                    containerGroup.rotation.x += deltaMove.y * 0.01; // Vertical rotation
+
+                    previousMousePosition = {
+                        x: e.clientX,
+                        y: e.clientY
+                    };
+                }
+            });
+
+            renderer.domElement.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+            }
+            animate();
+        </script>
+    </body>
+    </html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labor Allocation Algorithm</title>
+    <script>
+        function addTruckEntry() {
+            const container = document.getElementById("truckContainer");
+            const div = document.createElement("div");
+            div.innerHTML = `
+                <label>Truck Type: 
+                    <select class="truckType">
+                        <option value="mini">Mini</option>
+                        <option value="light">Light</option>
+                        <option value="medium">Medium</option>
+                        <option value="heavy">Heavy</option>
+                        <option value="semi">Semi</option>
+                        <option value="ultra-heavy">Ultra-heavy</option>
+                    </select>
+                </label>
+                <label>Count: <input type="number" class="truckCount" placeholder="Enter count" value="1"></label>
+                <button type="button" onclick="removeTruckEntry(this)">Remove</button><br>
+            `;
+            container.appendChild(div);
+        }
+
+        function removeTruckEntry(button) {
+            button.parentElement.remove();
+        }
+
+        function allocateLabor() {
+            const truckTypes = {
+                "mini": 1,
+                "light": 1.5,
+                "medium": 2,
+                "heavy": 3,
+                "semi": 4,
+                "ultra-heavy": 5
+            };
+
+            // Input data
+            const numLabors = parseInt(document.getElementById("numLabors").value);
+            const truckElements = document.querySelectorAll("#truckContainer div");
+
+            if (isNaN(numLabors) || numLabors <= 0) {
+                document.getElementById("output").innerHTML = "<p>Please enter a valid number of laborers.</p>";
+                return;
+            }
+
+            let truckData = [];
+            truckElements.forEach(div => {
+                const type = div.querySelector(".truckType").value;
+                const count = parseInt(div.querySelector(".truckCount").value);
+
+                if (!isNaN(count) && count > 0) {
+                    truckData.push({ type, count });
+                }
+            });
+
+            if (truckData.length === 0) {
+                document.getElementById("output").innerHTML = "<p>Please add valid truck data.</p>";
+                return;
+            }
+
+            // Calculate total effort required
+            let totalEffort = 0;
+            truckData.forEach(truck => {
+                totalEffort += truckTypes[truck.type] * truck.count;
+            });
+
+            // Calculate effort per laborer
+            const effortPerLabor = totalEffort / numLabors;
+
+            // Allocate labor to trucks
+            let allocation = [];
+            truckData.forEach(truck => {
+                const truckEffort = truckTypes[truck.type] * truck.count;
+                const laborForTruck = Math.round((truckEffort / totalEffort) * numLabors);
+                allocation.push({ type: truck.type, count: truck.count, labors: laborForTruck });
+            });
+
+            // Display result
+            let result = "<h3>Labor Allocation:</h3><ul>";
+            allocation.forEach(item => {
+                result += `<li>${item.count} ${item.type} truck(s): ${item.labors} laborer(s) allocated</li>`;
+            });
+            result += "</ul>";
+            document.getElementById("output").innerHTML = result;
+        }
+    </script>
+</head>
+<body>
+    <h1>Labor Allocation for Trucks</h1>
+
+    <label for="numLabors">Number of Laborers:</label>
+    <input type="number" id="numLabors" placeholder="Enter number of laborers"><br><br>
+
+    <div id="truckContainer"></div>
+
+    <button type="button" onclick="addTruckEntry()">Add Truck</button>
+    <br><br>
+    <button onclick="allocateLabor()">Allocate Labor</button>
+
+    <div id="output"></div>
+</body>
+</html>

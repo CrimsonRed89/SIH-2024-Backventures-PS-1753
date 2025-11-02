@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Routing with Pin Codes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+        .container {
+            margin: 20px;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dynamic Routing Based on Pin Code</h1>
+        <input type="text" id="pincode" placeholder="Enter Indian Pin Code (e.g., 400001)" />
+        <button onclick="routePinCode()">Route</button>
+    </div>
+    <div id="map"></div>
+
+    <script>
+        // Map initialization
+        const map = L.map('map').setView([20.5937, 78.9629], 5); // India center
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Define regions based on the first digit of pin codes
+        const regions = {
+            '1': { name: 'Delhi, Haryana, Punjab', coords: [28.7041, 77.1025] },
+            '2': { name: 'Uttar Pradesh, Bihar', coords: [25.3176, 82.9739] },
+            '3': { name: 'Rajasthan, Gujarat', coords: [26.9124, 75.7873] },
+            '4': { name: 'Maharashtra, Goa', coords: [19.076, 72.8777] },
+            '5': { name: 'Andhra Pradesh, Karnataka', coords: [15.9129, 79.7400] },
+            '6': { name: 'Kerala, Tamil Nadu', coords: [10.8505, 76.2711] },
+            '7': { name: 'Madhya Pradesh, Chhattisgarh', coords: [23.2599, 77.4126] },
+            '8': { name: 'West Bengal, Orissa', coords: [22.5726, 88.3639] },
+            '9': { name: 'Northeast India', coords: [26.2006, 92.9376] },
+        };
+
+        // Function to handle routing based on pin code
+        function routePinCode() {
+            const pincode = document.getElementById('pincode').value;
+
+            // Validate pincode
+            if (!/^[1-9][0-9]{5}$/.test(pincode)) {
+                alert('Please enter a valid 6-digit Indian pin code.');
+                return;
+            }
+
+            const firstDigit = pincode.charAt(0);
+            const region = regions[firstDigit];
+
+            if (region) {
+                alert(`Routing to: ${region.name}`);
+
+                // Move map view to the region
+                map.setView(region.coords, 7);
+
+                // Add marker
+                L.marker(region.coords).addTo(map)
+                    .bindPopup(`<b>${region.name}</b><br>Pincode: ${pincode}`)
+                    .openPopup();
+            } else {
+                alert('Region not found for this pin code.');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Routing with Geofence</title>
+    <style>
+        .container {
+            margin: 20px;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            margin-left: 10px;
+        }
+        iframe {
+            width: 100%;
+            height: 450px;
+            border: 0;
+            margin-top: 20px;
+        }
+        #locationStatus {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Dynamic Routing with Geofence</h1>
+    <input type="number" id="numIntermediates" placeholder="Enter number of intermediate points" />
+    <button onclick="addIntermediateFields()">Add Intermediate Points</button>
+    <div id="intermediateFields"></div>
+    <input type="text" id="destinationPincode" placeholder="Enter Destination Pin Code" />
+    <button onclick="createRoute()">Create Route</button>
+    <div id="locationStatus"></div>
+</div>
+<iframe id="googleMap" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+<script>
+    const API_KEY = 'AIzaSyDj3vJGnYx52KENC7svMfzp2O56Uty2fr8';
+    let currentLocation = null;
+    const locationStatus = document.getElementById('locationStatus');
+    const intermediateFields = document.getElementById('intermediateFields');
+
+    function initializeGeolocation() {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    currentLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    updateLocationStatus('Location acquired. Ready to route.');
+                },
+                () => updateLocationStatus('Unable to get location.'),
+                { enableHighAccuracy: true }
+            );
+        } else {
+            updateLocationStatus('Geolocation not supported.');
+        }
+    }
+
+    function updateLocationStatus(message) {
+        locationStatus.textContent = message;
+    }
+
+    function addIntermediateFields() {
+        const numIntermediates = parseInt(document.getElementById('numIntermediates').value, 10);
+        intermediateFields.innerHTML = '';
+
+        for (let i = 0; i < numIntermediates; i++) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = `Enter Intermediate Pin Code ${i + 1}`;
+            input.id = `intermediatePincode${i + 1}`;
+            intermediateFields.appendChild(input);
+        }
+    }
+
+    async function geocodePincode(pincode) {
+        const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${pincode},India&key=${API_KEY}`);
+        const data = await response.json();
+        if (data.status === 'OK' && data.results.length > 0) {
+            return data.results[0].geometry.location;
+        } else {
+            throw new Error(`Failed to geocode pincode: ${pincode}`);
+        }
+    }
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radius of the Earth in km
+        const dLat = (lat2 - lat1) * (Math.PI / 180);
+        const dLon = (lon2 - lon1) * (Math.PI / 180);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Distance in km
+    }
+
+    async function createRoute() {
+        const destinationPincode = document.getElementById('destinationPincode').value.trim();
+        const numIntermediates = intermediateFields.childElementCount;
+        const intermediates = [];
+
+        for (let i = 0; i < numIntermediates; i++) {
+            const pincode = document.getElementById(`intermediatePincode${i + 1}`).value.trim();
+            try {
+                const location = await geocodePincode(pincode);
+                const distance = calculateDistance(currentLocation.lat, currentLocation.lng, location.lat, location.lng);
+                if (distance <= 100) { // Geofence radius of 100 km
+                    intermediates.push(location);
+                } else {
+                    alert(`Intermediate point ${pincode} is outside the 100 km geofence.`);
+                }
+            } catch (error) {
+                alert(`Failed to process intermediate point ${pincode}: ${error.message}`);
+            }
+        }
+
+        try {
+            const destination = await geocodePincode(destinationPincode);
+            const waypoints = intermediates.map(loc => `${loc.lat},${loc.lng}`).join('|');
+
+            document.getElementById('googleMap').src = `https://www.google.com/maps/embed/v1/directions?key=${API_KEY}&origin=${currentLocation.lat},${currentLocation.lng}&destination=${destination.lat},${destination.lng}&waypoints=${waypoints}`;
+        } catch (error) {
+            alert('Failed to create route: ' + error.message);
+        }
+    }
+
+    initializeGeolocation();
+</script>
+</body>
+</html>

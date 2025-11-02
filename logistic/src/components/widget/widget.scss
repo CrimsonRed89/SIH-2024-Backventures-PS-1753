@@ -1,0 +1,123 @@
+@import "../../../src/variables";
+
+.widget {
+    display: flex;
+    justify-content: space-between;
+    flex: 1;
+    padding: 10px;
+    -webkit-box-shadow: $box-shadow-dark;
+    box-shadow: $box-shadow-light;
+    border-radius: 10px;
+    background-color: $primary-light-bg;
+
+    .left,
+    .right {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        .title {
+            font-weight: bold;
+            font-size: 0.9em;
+            color: $primary-med-text;
+        }
+
+        .counter {
+            font-size: 1.8em;
+            font-weight: 300;
+            color: $secondary-dark;
+        }
+
+        .link {
+            width: max-content;
+            font-size: 1em;
+            border-bottom: 1px solid gray;
+            color: $secondary-dark;
+        }
+
+        .percentage {
+            display: flex;
+            align-items: center;
+            font-size: 1.7vmin;
+
+            &.positive {
+                color: $success-text;
+            }
+
+            &.negative {
+                color: $warning-text;
+            }
+        }
+
+        .icon {
+            font-size: 1.5em;
+            padding: 0.4em;
+            border-radius: 0.4em;
+            align-self: flex-end;
+        }
+    }
+}
+
+@media (max-width: 1200px) {
+    .widget {
+        .left,
+        .right {
+            .title {
+                font-size: 1em;
+            }
+
+            .counter {
+                font-size: 1.5em;
+            }
+
+            .link {
+                font-size: 0.75em !important;
+            }
+
+            .percentage {
+                font-size: 0.7em !important;
+            }
+
+            .icon {
+                font-size: 1.2em;
+                padding: 0.3em;
+                border-radius: 0.3em;
+                align-self: flex-end;
+            }
+        }
+    }
+}
+
+@media (max-width: 800px) {
+    .widget {
+        .left,
+        .right {
+            .title {
+                font-size: 0.45em;
+            }
+
+            .counter {
+                font-size: 0.8em;
+            }
+
+            .link {
+                font-size: 0.4em !important;
+            }
+
+            .percentage {
+                font-size: 0.35em !important;
+
+                .pct-icon {
+                    font-size: 1.5em;
+                }
+            }
+
+            .icon {
+                font-size: 0.8em;
+                padding: 0.2em;
+                border-radius: 0.3em;
+                align-self: flex-end;
+            }
+        }
+    }
+}

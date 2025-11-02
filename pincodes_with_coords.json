@@ -1,0 +1,26 @@
+{
+    "110010": {
+        "state": "Unknown",
+        "post_office": "Unknown",
+        "coords": [
+            28.5929297,
+            77.1218197
+        ]
+    },
+    "282001": {
+        "state": "Unknown",
+        "post_office": "Unknown",
+        "coords": [
+            27.1407174,
+            78.0309542
+        ]
+    },
+    "721454": {
+        "state": "Unknown",
+        "post_office": "Unknown",
+        "coords": [
+            22.065735,
+            87.58900919999999
+        ]
+    }
+}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Routing with Pin Codes</title>
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+        .container {
+            margin: 20px;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            margin-left: 10px;
+        }
+        iframe {
+            width: 100%;
+            height: 450px;
+            border: 0;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Dynamic Routing Based on Pin Codes</h1>
+    <input type="text" id="pincode" placeholder="Enter Indian Pin Code (e.g., 400001)" />
+    <button onclick="routePinCode()">Route</button>
+</div>
+<iframe id="googleMap" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+<script>
+    let pinData = {};
+    let currentLocationMarker;
+
+    fetch('pincodes_with_coords.json')
+        .then(response => response.json())
+        .then(data => { pinData = data; })
+        .catch(err => console.error('Error loading pin codes:', err));
+
+    function startLiveLocationUpdates() {
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+                position => {
+                    const userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    currentLocationMarker = userLocation;
+                },
+                () => { alert('Geolocation access denied.'); },
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+            );
+        } else {
+            alert('Geolocation not supported.');
+        }
+    }
+
+    function routePinCode() {
+        const pincode = document.getElementById('pincode').value.trim();
+
+        if (!pinData[pincode]) {
+            alert('Invalid pin code or data not available.');
+            return;
+        }
+
+        const destination = pinData[pincode];
+        const destinationCoords = destination.coords;
+
+        if (currentLocationMarker) {
+            const googleMap = document.getElementById('googleMap');
+            const googleMapUrl = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyDj3vJGnYx52KENC7svMfzp2O56Uty2fr8&origin=${currentLocationMarker.lat},${currentLocationMarker.lng}&destination=${destinationCoords[0]},${destinationCoords[1]}`;
+            googleMap.src = googleMapUrl;
+        } else {
+            alert('Live location not available. Please wait.');
+        }
+    }
+
+    startLiveLocationUpdates();
+</script>
+</body>
+</html>

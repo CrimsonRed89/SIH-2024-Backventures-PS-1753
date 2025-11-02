@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIS Report</title>
+</head>
+<body>
+
+<h2>Driver Emotion Detection MIS Report</h2>
+<table border="1">
+    <thead>
+        <tr>
+            <th>Driver ID</th>
+            <th>Timestamp</th>
+            <th>Status</th>
+            <th>Accel X</th>
+            <th>Accel Y</th>
+            <th>Accel Z</th>
+        </tr>
+    </thead>
+    <tbody id="reportData"></tbody>
+</table>
+
+<script>
+fetch('/generate-fake-data')
+    .then(response => response.json())
+    .then(data => {
+        const table = document.getElementById('reportData');
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row.driverId}</td>
+                <td>${row.timestamp}</td>
+                <td>${row.drivingStatus}</td>
+                <td>${row.accelX}</td>
+                <td>${row.accelY}</td>
+                <td>${row.accelZ}</td>
+            `;
+            table.appendChild(tr);
+        });
+    });
+</script>
+
+</body>
+</html>

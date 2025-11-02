@@ -1,0 +1,349 @@
+@import "../../../src/variables";
+
+.tripDetails {
+    display: flex;
+    width: 100%;
+
+    .tripContainer {
+        flex: 6;
+        overflow: hidden;
+        background-color: $app-bg;
+        display: flex;
+        flex-direction: column;
+        gap: 2%;
+
+        .tripView {
+            display: flex;
+            height: 100%;
+            gap: 2%;
+
+            .left {
+                flex: 1;
+                margin-bottom: 2%;
+                margin-left: 5%;
+                height: 99%;
+                background-color: $primary-light-bg;
+                -webkit-box-shadow: $box-shadow-dark;
+                box-shadow: $box-shadow-light;
+                display: flex;
+                flex-direction: column;
+
+                .left-top {
+                    padding-top: auto;
+                    padding-bottom: auto;
+                    width: 90%;
+                    height: 100%;
+                    flex: 1;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: center;
+                    margin-left: 5%;
+                    margin-right: 5%;
+
+                    .left-left {
+                        flex: 6;
+                        height: 100%;
+                        display: flex;
+                        justify-content: center;
+
+                        .tripSummary {
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            width: 100%;
+                            color: $secondary-dark;
+
+                            .path {
+                                display: flex;
+                                margin-right: auto;
+                                gap: 1%;
+                                width: 90%;
+                                align-items: center;
+
+                                .facility {
+                                    font-weight: bold;
+                                    flex: 4;
+                                    font-size: 1.2rem;
+                                }
+
+                                span {
+                                    flex: 1;
+                                    font-size: 2vmin;
+                                    text-align: start;
+                                }
+                            }
+
+                            .dates {
+                                display: flex;
+                                margin-right: auto;
+                                gap: 1%;
+                                width: 90%;
+                                align-items: center;
+
+                                .date {
+                                    font-weight: bold;
+                                    font-size: 1.2rem;
+                                    flex: 4;
+                                }
+                                span {
+                                    font-size: 2vmin;
+                                    text-align: start;
+                                    flex: 1;
+                                }
+                            }
+
+                            .summary {
+                                width: 100%;
+                                font-size: 1.5vmin;
+                            }
+                        }
+                    }
+
+                    .left-right {
+                        height: 100%;
+                        flex: 1;
+
+                        .editBtn {
+                            flex: 1;
+                            height: 100%;
+                            color: $secondary-dark;
+                            display: flex;
+                            justify-content: right;
+                            font-size: 2vmin;
+                            gap: 2%;
+
+                            span {
+                                font-size: 1.8vmin;
+                            }
+
+                            span,
+                            .icon {
+                                margin-top: auto;
+                                margin-bottom: auto;
+                                cursor: pointer;
+                            }
+                        }
+                    }
+                }
+
+                hr {
+                    font-size: 0.2vmin;
+                    width: 80%;
+                    height: 0.05%;
+                    background-color: $primary-light;
+                    margin: 2% 10%;
+                }
+
+                .left-bottom {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    flex: 4;
+                    gap: 5%;
+                    padding-bottom: 5%;
+                }
+            }
+
+            .right {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 2%;
+                margin-right: 5%;
+                height: 99%;
+
+                .right-top {
+                    flex: 1;
+                    padding: 2%;
+                    background-color: $primary-light-bg;
+                }
+
+                .right-bottom {
+                    flex: 2;
+                    padding: 2%;
+                    background-color: $primary-light-bg;
+
+                    .customCalendar {
+                        height: 100%;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 1200px) {
+    .tripDetails {
+        display: flex;
+        width: 100%;
+
+        .tripContainer {
+            flex: 6;
+            overflow: hidden;
+            background-color: $app-bg;
+            display: flex;
+            flex-direction: column;
+            gap: 2%;
+
+            .tripView {
+                display: flex;
+                height: 100%;
+                gap: 2%;
+
+                .left {
+                    flex: 1;
+                    margin-bottom: 2%;
+                    margin-left: 5%;
+                    height: 99%;
+                    background-color: $primary-light-bg;
+                    -webkit-box-shadow: $box-shadow-dark;
+                    box-shadow: $box-shadow-light;
+                    display: flex;
+                    flex-direction: column;
+
+                    .left-top {
+                        padding-top: auto;
+                        padding-bottom: auto;
+                        width: 90%;
+                        height: 100%;
+                        flex: 1;
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                        justify-content: center;
+                        margin-left: 5%;
+                        margin-right: 5%;
+
+                        .left-left {
+                            flex: 7;
+                            height: 100%;
+                            display: flex;
+                            justify-content: center;
+
+                            .tripSummary {
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                align-items: center;
+                                width: 100%;
+                                color: $secondary-dark;
+
+                                .path {
+                                    display: flex;
+                                    margin-right: auto;
+                                    gap: 1%;
+                                    width: 90%;
+                                    align-items: center;
+
+                                    .facility {
+                                        font-weight: bold;
+                                        flex: 3;
+                                        font-size: 0.8rem;
+                                    }
+
+                                    span {
+                                        flex: 1;
+                                        font-size: 1.5vmin;
+                                    }
+                                }
+
+                                .dates {
+                                    display: flex;
+                                    margin-right: auto;
+                                    gap: 1%;
+                                    width: 90%;
+                                    align-items: center;
+
+                                    .date {
+                                        font-weight: bold;
+                                        font-size: 0.6rem;
+                                        flex: 3;
+                                    }
+                                    span {
+                                        font-size: 1.5vmin;
+                                        flex: 1;
+                                    }
+                                }
+
+                                .summary {
+                                    width: 100%;
+                                    font-size: 1.5vmin;
+                                }
+                            }
+                        }
+
+                        .left-right {
+                            height: 100%;
+                            flex: 1;
+
+                            .editBtn {
+                                flex: 1;
+                                height: 100%;
+                                color: $secondary-dark;
+                                display: flex;
+                                justify-content: right;
+                                font-size: 2vmin;
+                                gap: 2%;
+
+                                span {
+                                    font-size: 1.8vmin;
+                                }
+
+                                span,
+                                .icon {
+                                    margin-top: auto;
+                                    margin-bottom: auto;
+                                    cursor: pointer;
+                                }
+                            }
+                        }
+                    }
+
+                    hr {
+                        font-size: 0.2vmin;
+                        width: 80%;
+                        height: 0.05%;
+                        background-color: $primary-light;
+                        margin: 2% 10%;
+                    }
+
+                    .left-bottom {
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                        flex: 4;
+                        gap: 5%;
+                        padding-bottom: 5%;
+                    }
+                }
+
+                .right {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2%;
+                    margin-right: 5%;
+                    height: 99%;
+
+                    .right-top {
+                        flex: 1;
+                        padding: 2%;
+                        background-color: $primary-light-bg;
+                    }
+
+                    .right-bottom {
+                        flex: 2;
+                        padding: 2%;
+                        background-color: $primary-light-bg;
+
+                        .customCalendar {
+                            height: 100%;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

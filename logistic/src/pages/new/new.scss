@@ -1,0 +1,90 @@
+@import "../../../src/variables";
+
+.new {
+    width: 100%;
+    display: flex;
+
+    .newContainer {
+        flex: $app-bg;
+
+        .bottom {
+            gap: 20%;
+        }
+
+        .top,
+        .bottom {
+            padding: 10px;
+            -webkit-box-shadow: $box-shadow-dark;
+            box-shadow: $box-shadow-light;
+            margin: 20px;
+            display: flex;
+            background-color: $primary-light-bg;
+
+            h1 {
+                color: $primary-light;
+                font-size: 20px;
+            }
+
+            .right {
+                flex: 1;
+
+                form {
+                    display: flex;
+                    flex-wrap: wrap;
+                    flex-direction: column;
+                    gap: 30px;
+                    justify-content: space-around;
+                    align-items: center;
+
+                    .formInput {
+                        width: 40%;
+
+                        label {
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+
+                            .icon {
+                                cursor: pointer;
+                            }
+                        }
+
+                        input {
+                            width: 100%;
+                            padding: 5px;
+                            border: none;
+                            border-bottom: 1px solid $primary-light;
+                            outline: none;
+                        }
+                    }
+
+                    .btn-row {
+                        display: flex;
+                        gap: 5%;
+
+                        button {
+                            width: 150px;
+                            padding: 10px;
+                            border: none;
+                            font-weight: bold;
+                            cursor: pointer;
+                            margin-top: 10px;
+                            -webkit-box-shadow: $box-shadow-dark;
+                            box-shadow: $box-shadow-light;
+                        }
+
+                        .cancelBtn {
+                            background-color: $app-bg;
+                            color: $primary-dark;
+                        }
+
+                        .submitBtn {
+                            background-color: $primary-dark;
+                            color: $app-bg;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

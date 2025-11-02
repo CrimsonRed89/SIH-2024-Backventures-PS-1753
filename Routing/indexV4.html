@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Routing with Pin Codes and Intermediate Points</title>
+    <style>
+        .container {
+            margin: 20px;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            margin-left: 10px;
+        }
+        iframe {
+            width: 100%;
+            height: 450px;
+            border: 0;
+            margin-top: 20px;
+        }
+        #locationStatus, #geocodeStatus {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        #ui-section {
+            float: right;
+            width: 300px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Dynamic Routing Based on Pin Codes and Intermediate Points</h1>
+    <input type="number" id="numIntermediates" placeholder="Enter number of intermediate points" />
+    <button onclick="addIntermediateFields()">Add Intermediate Points</button>
+    <div id="intermediateFields"></div>
+    <input type="text" id="destinationPincode" placeholder="Enter Destination Indian Pin Code (e.g., 400004)" />
+    <button onclick="routePinCode()">Route</button>
+    <div id="locationStatus"></div>
+    <div id="geocodeStatus"></div>
+</div>
+<div id="ui-section">
+    <h2>Upload Volume Information</h2>
+    <p>Current Volume: <input type="number" id="current-volume" value="1000"></p>
+    <h2>Intermediate Warehouses</h2>
+    <ul id="intermediate-warehouses">
+        <!-- Intermediate warehouse list will be generated dynamically -->
+    </ul>
+    <h2>Route Options</h2>
+    <button id="shortest-time-route">Shortest Time Route</button>
+    <button id="max-profit-route">Max Profit Route</button>
+    <button id="shortest-distance-route">Shortest Distance Route</button>
+</div>
+<iframe id="googleMap" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+<script>
+    const API_KEY = 'AIzaSyDj3vJGnYx52KENC7svMfzp2O56Uty2fr8';
+    let currentLocation = null;
+    const locationStatus = document.getElementById('locationStatus');
+    const geocodeStatus = document.getElementById('geocodeStatus');
+    const intermediateFields = document.getElementById('intermediateFields');
+    const intermediateWarehousesList = document.getElementById('intermediate-warehouses');
+    const currentVolumeInput = document.getElementById('current-volume');
+    const shortestTimeRouteButton = document.getElementById('shortest-time-route');
+    const maxProfitRouteButton = document.getElementById('max-profit-route');
+    const shortestDistanceRouteButton = document.getElementById('shortest-distance-route');
+
+    function initializeGeolocation() {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    currentLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    updateLocationStatus('Location acquired. Ready to route.');
+                },
+                () => updateLocationStatus('Unable to get location.'),
+                { enableHighAccuracy: true }
+            );
+        } else {
+            updateLocationStatus('Geolocation not supported.');
+        }
+    }
+
+    function updateLocationStatus(message) {
+        locationStatus.textContent = message;
+    }
+
+    function addIntermediateFields() {
+        const numIntermediates = parseInt(document.getElementById('numIntermediates').value, 10);
+        intermediateFields.innerHTML = '';
+        intermediateWarehousesList.innerHTML = '';
+
+        for (let i = 0; i < numIntermediates; i++) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = `Enter Intermediate Pin Code ${i + 1}`;
+            input.id = `intermediatePincode${i + 1}`;
+            intermediateFields.appendChild(input);
+
+            const warehouseItem = document.createElement('li');
+            const load = Math.floor(Math.random() * 500) + 100;
+            warehouseItem.textContent = `Warehouse ${i + 1}: Load ${load}`;
+            warehouseItem.setAttribute('data-load', load);
+            warehouseItem.setAttribute('data-distance', Math.random() * 100); // Simulated distance
+            intermediateWarehousesList.appendChild(warehouseItem);
+        }
+    }
+
+    async function geocodePincode(pincode) {
+        const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${pincode},India&key=${API_KEY}`);
+        const data = await response.json();
+        if (data.status === 'OK' && data.results.length > 0) {
+            return data.results[0].geometry.location;
+        } else {
+            throw new Error(`Failed to geocode pincode: ${pincode}`);
+        }
+    }
+
+    function calculateMaxProfit(intermediates, currentVolume) {
+        const n = intermediates.length;
+        const dp = Array.from({ length: n + 1 }, () => Array(currentVolume + 1).fill(0));
+
+        for (let i = 1; i <= n; i++) {
+            const { load } = intermediates[i - 1];
+            for (let v = 0; v <= currentVolume; v++) {
+                dp[i][v] = dp[i - 1][v];
+                if (v >= load) {
+                    dp[i][v] = Math.max(dp[i][v], dp[i - 1][v - load] + load);
+                }
+            }
+        }
+
+        const selected = [];
+        let v = currentVolume;
+        for (let i = n; i > 0; i--) {
+            if (dp[i][v] !== dp[i - 1][v]) {
+                selected.push(intermediates[i - 1]);
+                v -= intermediates[i - 1].load;
+            }
+        }
+
+        return selected;
+    }
+
+    async function createRoute(option) {
+        const destinationPincode = document.getElementById('destinationPincode').value.trim();
+        const numIntermediates = intermediateFields.childElementCount;
+        const intermediates = [];
+        let currentVolume = parseInt(currentVolumeInput.value, 10);
+
+        for (let i = 0; i < numIntermediates; i++) {
+            const pincode = document.getElementById(`intermediatePincode${i + 1}`).value.trim();
+            const load = parseInt(document.querySelector(`#intermediate-warehouses li:nth-child(${i + 1})`).getAttribute('data-load'), 10);
+            const distance = parseFloat(document.querySelector(`#intermediate-warehouses li:nth-child(${i + 1})`).getAttribute('data-distance'));
+
+            intermediates.push({ pincode, load, distance });
+        }
+
+        let selectedPoints = [];
+        if (option === 'max-profit') {
+            selectedPoints = calculateMaxProfit(intermediates, currentVolume);
+        } else if (option === 'shortest-time') {
+            selectedPoints = intermediates.filter(point => point.distance > 50).slice(0, Math.ceil(intermediates.length / 2));
+        } else if (option === 'shortest-distance') {
+            intermediates.sort((a, b) => a.distance - b.distance);
+            selectedPoints = intermediates.slice(0, intermediates.length);
+        }
+
+        try {
+            const destination = await geocodePincode(destinationPincode);
+            const waypoints = await Promise.all(
+                selectedPoints.map(async (point) => ({
+                    location: await geocodePincode(point.pincode)
+                }))
+            );
+
+            const directions = waypoints.map((wp) => `${wp.location.lat},${wp.location.lng}`).join('|');
+
+            document.getElementById('googleMap').src = `https://www.google.com/maps/embed/v1/directions?key=${API_KEY}&origin=${currentLocation.lat},${currentLocation.lng}&destination=${destination.lat},${destination.lng}&waypoints=${directions}`;
+        } catch (error) {
+            alert('Failed to create route: ' + error.message);
+        }
+    }
+
+    shortestTimeRouteButton.addEventListener('click', () => createRoute('shortest-time'));
+    maxProfitRouteButton.addEventListener('click', () => createRoute('max-profit'));
+    shortestDistanceRouteButton.addEventListener('click', () => createRoute('shortest-distance'));
+
+    initializeGeolocation();
+</script>
+</body>
+</html>
